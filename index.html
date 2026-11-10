@@ -134,23 +134,77 @@ const db = supabase.createClient(
 let selected='پشتیبانی';
 let data=JSON.parse(localStorage.getItem('pingo_messages')||'{}');
 
-function login(){
- let name=document.getElementById('username').value.trim();
- if(!name){alert('نام کاربری را وارد کن');return}
- currentUser=name;
- localStorage.setItem('pingo_user',name);
- document.getElementById('welcome').textContent=name;
- document.getElementById('login').style.display='none';
- document.getElementById('chat').style.display='block';
- render();
+
+async function login(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if(!email || !password){
+    alert('ایمیل و رمز عبور را وارد کن');
+    return;
+  }
+
+  const {data,error} = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    alert('خطا در ورود: ' + error.message);
+    return;
+  }
+
+  currentUser = data.user.id;
+
+  const username = email.split('@')[0];
+
+  await db.from('profiles').upsert({
+    id: currentUser,
+    username: username,
+    display_name: username
+  });
+
+  document.getElementById('welcome').textContent = username;
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('chat').style.display = 'block';
+
+  render();
 }
 
-function logout(){
- currentUser='';
- localStorage.removeItem('pingo_user');
- document.getElementById('chat').style.display='none';
- document.getElementById('login').style.display='block';
+async function register(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if(!email || password.length < 6){
+    alert('ایمیل معتبر و رمز حداقل ۶ کاراکتری وارد کن');
+    return;
+  }
+
+  const {data,error} = await db.auth.signUp({
+    email,
+    password
+  });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  if(!data.session){
+    alert('ثبت نام انجام شد. ایمیلت را برای تأیید حساب بررسی کن.');
+    return;
+  }
+
+  alert('حساب ساخته شد! حالا وارد شو.');
 }
+
+async function logout(){
+  await db.auth.signOut();
+  currentUser = '';
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('login').style.display = 'block';
+}
+ 
 
 function selectUser(el,name){
  selected=name;
@@ -191,11 +245,6 @@ function render(){
  box.scrollTop=box.scrollHeight;
 }
 
-let saved=localStorage.getItem('pingo_user');
-if(saved){
- document.getElementById('username').value=saved;
- login();
-}
 </script>
 </body>
 </html>
