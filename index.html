@@ -77,14 +77,21 @@ small{color:#a99abf}
  <div class="status">Messenger V1</div>
 </header>
 
-<div class="container">
- <section id="login" class="card">
-  <h2>خوش آمدی 👋</h2>
-  <p class="status">ورود آزمایشی به PINGO</p>
-  <input id="username" placeholder="نام کاربری خود را وارد کن">
+
+<section id="login" class="card">
+  <h2>ورود به PINGO 💬</h2>
+  <p class="status">برای ورود یا ساخت حساب، اطلاعاتت رو وارد کن.</p>
+
+  <input id="email" type="email" placeholder="ایمیل">
   <br><br>
-  <button onclick="login()">ورود به پیام‌رسان</button>
- </section>
+
+  <input id="password" type="password" placeholder="رمز عبور">
+  <br><br>
+
+  <button onclick="login()">ورود</button>
+  <button onclick="register()">ساخت حساب</button>
+</section>
+ 
 
  <section id="chat">
   <div class="card">
