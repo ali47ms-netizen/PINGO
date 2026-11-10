@@ -112,9 +112,18 @@ small{color:#a99abf}
   </div>
  </section>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-let currentUser='';
+
+const SUPABASE_URL = 'https://wpzdsstvjevgxaxctkzk.supabase.co';
+
+const SUPABASE_KEY = 'sb_publishable_X76hn1jsblY-q2gIWsjgGg_V0s7x8G3';
+
+const db = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+ let currentUser='';
 let selected='پشتیبانی';
 let data=JSON.parse(localStorage.getItem('pingo_messages')||'{}');
 
