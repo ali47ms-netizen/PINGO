@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PINGO Messenger</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#090914;color:white;
+ font-family:Tahoma,Arial,sans-serif;
+}
+header{
+ padding:20px;background:#111124;
+ border-bottom:1px solid #292044;
+ display:flex;justify-content:space-between;
+ align-items:center;
+}
+.logo{font-size:25px;font-weight:bold;color:#b58aff}
+.logo span{color:#fff}
+.status{font-size:12px;color:#9d8bbd}
+.container{max-width:950px;margin:25px auto;padding:12px}
+.card{
+ background:#131326;border:1px solid #30234c;
+ border-radius:16px;padding:18px;margin-bottom:15px;
+}
+input,button{
+ border:0;border-radius:10px;padding:13px;
+ font-size:14px;
+}
+input{
+ background:#202039;color:white;width:100%;
+ outline:none;border:1px solid #373052;
+}
+button{
+ background:#8749e8;color:white;
+ cursor:pointer;font-weight:bold;
+}
+button:hover{background:#a36aff}
+#login{max-width:400px;margin:70px auto}
+#chat{display:none}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:15px}
+.users{min-height:440px}
+.user{
+ padding:14px;background:#202039;
+ border-radius:10px;margin-top:10px;
+ cursor:pointer;border:1px solid transparent;
+}
+.user.active{border-color:#a16aff;background:#30204b}
+.messages{
+ height:340px;overflow:auto;padding:12px;
+ background:#0d0d1c;border-radius:12px;
+ display:flex;flex-direction:column;gap:12px;
+}
+.msg{
+ background:#25213b;padding:12px;
+ border-radius:12px;max-width:80%;
+ align-self:flex-start;overflow-wrap:anywhere;
+}
+.msg.me{
+ background:#713bc0;align-self:flex-end;
+}
+.send{display:flex;gap:8px;margin-top:12px}
+.send input{flex:1;min-width:0}
+small{color:#a99abf}
+@media(max-width:600px){
+ .layout{grid-template-columns:1fr}
+ .users{min-height:auto}
+ .messages{height:350px}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">PINGO<span>.</span></div>
+ <div class="status">Messenger V1</div>
+</header>
+
+<div class="container">
+ <section id="login" class="card">
+  <h2>خوش آمدی 👋</h2>
+  <p class="status">ورود آزمایشی به PINGO</p>
+  <input id="username" placeholder="نام کاربری خود را وارد کن">
+  <br><br>
+  <button onclick="login()">ورود به پیام‌رسان</button>
+ </section>
+
+ <section id="chat">
+  <div class="card">
+   <b>سلام <span id="welcome"></span>!</b>
+   <small> به PINGO خوش آمدی.</small>
+   <button onclick="logout()" style="float:left">خروج</button>
+  </div>
+
+  <div class="layout">
+   <div class="card users">
+    <h3>گفتگوها</h3>
+    <div class="user active" onclick="selectUser(this,'پشتیبانی')">🟣 پشتیبانی</div>
+    <div class="user" onclick="selectUser(this,'کاربر آزمایشی')">🟢 کاربر آزمایشی</div>
+    <div class="user" onclick="selectUser(this,'دوست من')">🔵 دوست من</div>
+   </div>
+
+   <div class="card">
+    <h3 id="chatName">پشتیبانی</h3>
+    <div class="messages" id="messages"></div>
+    <div class="send">
+     <input id="message" placeholder="پیامت را بنویس..." onkeydown="if(event.key==='Enter')send()">
+     <button onclick="send()">ارسال</button>
+    </div>
+   </div>
+  </div>
+ </section>
+</div>
+
+<script>
+let currentUser='';
+let selected='پشتیبانی';
+let data=JSON.parse(localStorage.getItem('pingo_messages')||'{}');
+
+function login(){
+ let name=document.getElementById('username').value.trim();
+ if(!name){alert('نام کاربری را وارد کن');return}
+ currentUser=name;
+ localStorage.setItem('pingo_user',name);
+ document.getElementById('welcome').textContent=name;
+ document.getElementById('login').style.display='none';
+ document.getElementById('chat').style.display='block';
+ render();
+}
+
+function logout(){
+ currentUser='';
+ localStorage.removeItem('pingo_user');
+ document.getElementById('chat').style.display='none';
+ document.getElementById('login').style.display='block';
+}
+
+function selectUser(el,name){
+ selected=name;
+ document.querySelectorAll('.user').forEach(x=>x.classList.remove('active'));
+ el.classList.add('active');
+ document.getElementById('chatName').textContent=name;
+ render();
+}
+
+function send(){
+ let input=document.getElementById('message');
+ let value=input.value.trim();
+ if(!value)return;
+ let key=currentUser+'_'+selected;
+ if(!data[key])data[key]=[];
+ data[key].push({user:currentUser,text:value,time:new Date().toLocaleTimeString('fa-IR')});
+ localStorage.setItem('pingo_messages',JSON.stringify(data));
+ input.value='';
+ render();
+}
+
+function render(){
+ let box=document.getElementById('messages');
+ box.innerHTML='';
+ let list=data[currentUser+'_'+selected]||[];
+ list.forEach(m=>{
+  let div=document.createElement('div');
+  div.className='msg'+(m.user===currentUser?' me':'');
+  let strong=document.createElement('strong');
+  strong.textContent=m.user;
+  let content=document.createElement('div');
+  content.textContent=m.text;
+  let time=document.createElement('small');
+  time.textContent=m.time;
+  div.append(strong,content,time);
+  box.appendChild(div);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+
+let saved=localStorage.getItem('pingo_user');
+if(saved){
+ document.getElementById('username').value=saved;
+ login();
+}
+</script>
+</body>
+</html>
